@@ -17,7 +17,7 @@ st.markdown("""
 st.title("🌙 نظام Sleep IQ: التحليل والتوصيات الذكية")
 
 # تحميل الموديل والبيانات من مجلد content
-model = joblib.load('/content/sleep_model.pkl')
+model = joblib.load('sleep_model.pkl')
 df = pd.read_csv('/content/processed_sleep_data.csv')
 
 # 2. القائمة الجانبية لمدخلات المستخدم
