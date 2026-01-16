@@ -59,4 +59,43 @@ with col_input:
         if systolic > 155 or diastolic > 95 or bmi_cat == "Obese":
             score = 0.1 if job == "Nurse" else 0.0
             st.error(f"تحذير: مؤشرات صحية حرجة! الجودة: {score} 😡")
-        elif stress >
+        elif stress > 8:
+            score = 5.2
+            st.warning(f"مستوى التوتر مرتفع! الجودة: {score} 😐")
+        else:
+            st.balloons() # إرجاع البالونات
+            st.success(f"نتيجة ممتازة! الجودة المتوقعة هي: {score} 🎉")
+
+with col_matrix:
+    st.subheader("📊 مصفوفة الارتباط الحية")
+    if not df.empty and HAS_SEABORN:
+        # إغلاق الأقواس بشكل صحيح لتجنب SyntaxError
+        fig_m, ax_m = plt.subplots(figsize=(10, 8))
+        sns.heatmap(df.select_dtypes(include=[np.number]).corr(), annot=True, cmap='coolwarm', fmt=".1f", ax=ax_m)
+        st.pyplot(fig_m)
+
+st.markdown("---")
+
+# 4. الأزرار السفلية للرسومات
+st.subheader("🔍 استعراض التقارير الإحصائية")
+col_b1, col_b2, col_b3 = st.columns(3)
+
+if col_b1.button("📊 جودة النوم vs الوزن"):
+    if not df.empty and HAS_SEABORN:
+        fig1, ax1 = plt.subplots()
+        sns.boxplot(data=df, x='BMI Category', y='Quality of Sleep', palette='Set2', ax=ax1)
+        st.pyplot(fig1)
+
+if col_b2.button("📉 تحليل الضغط"):
+    if not df.empty and HAS_SEABORN:
+        # بحث تلقائي عن اسم العمود لتجنب KeyError
+        bp_col = 'Systolic BP' if 'Systolic BP' in df.columns else (df.columns[1] if len(df.columns)>1 else df.columns[0])
+        fig2, ax2 = plt.subplots()
+        sns.regplot(data=df, x=bp_col, y='Quality of Sleep', color='blue', ax=ax2)
+        st.pyplot(fig2)
+
+if col_b3.button("🧪 التوتر والعمر"):
+    if not df.empty and HAS_SEABORN:
+        fig3, ax3 = plt.subplots()
+        sns.scatterplot(data=df, x='Age', y='Quality of Sleep', hue='Stress Level', ax=ax3)
+        st.pyplot(fig3)
