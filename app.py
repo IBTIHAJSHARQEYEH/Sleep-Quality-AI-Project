@@ -18,17 +18,17 @@ def load_assets():
 
 model, data = load_assets()
 
-st.set_page_config(page_title="Sleep IQ Full System", layout="wide")
-st.title("🌙 نظام Sleep IQ: التحليل الرقمي والفيزيائي الكامل")
+st.set_page_config(page_title="Sleep IQ Final", layout="wide")
+st.title("🌙 نظام Sleep IQ: التحليل الرقمي والتشخيص الطبي")
 
-# 2. القائمة الجانبية: كافة المدخلات بدون استثناء
-st.sidebar.header("🩺 المؤشرات الحيوية")
+# 2. القائمة الجانبية
+st.sidebar.header("🩺 المدخلات الحيوية والفيزيائية")
 with st.sidebar:
     gender = st.selectbox("الجنس", ["Male", "Female"])
     age = st.slider("العمر", 18, 80, 41)
     systolic = st.slider("الضغط الانقباضي", 90, 180, 127)
-    diastolic = st.slider("الضغط الانبساطي", 60, 110, 80) # تمت الإعادة
-    sleep_dur = st.slider("ساعات النوم", 2.0, 12.0, 9.51)
+    diastolic = st.slider("الضغط الانبساطي", 60, 110, 80)
+    sleep_dur = st.slider("ساعات النوم", 2.0, 12.0, 7.0)
     stress = st.slider("مستوى التوتر", 1, 10, 6)
     
     st.markdown("---")
@@ -37,15 +37,13 @@ with st.sidebar:
     heart_rate = st.slider("نبض القلب", 60, 100, 82)
     bmi_cat = st.selectbox("فئة الوزن", ["Normal Weight", "Overweight", "Obese"])
     
-    all_occupations = ["Accountant", "Doctor", "Engineer", "Lawyer", "Manager", "Nurse", "Salesperson", "Sales Representative", "Scientist", "Software Engineer", "Teacher"]
-    occupation = st.selectbox("المهنة", all_occupations)
+    occupation = st.selectbox("المهنة", ["Accountant", "Doctor", "Engineer", "Lawyer", "Manager", "Nurse", "Salesperson", "Sales Representative", "Scientist", "Software Engineer", "Teacher"])
 
-# 3. معالجة البيانات وبناء الجدول الرقمي (0 و 1)
+# 3. معالجة البيانات للموديل
 def scale_val(val, min_val, max_val):
     return (val - min_val) / (max_val - min_val) if max_val != min_val else 0
 
 if model:
-    # إنشاء صف يحتوي على كل الأعمدة التي يتوقعها الموديل
     input_row = {col: 0.0 for col in model.feature_names_in_}
     input_row.update({
         'Gender': 1.0 if gender == "Male" else 0.0,
@@ -58,14 +56,11 @@ if model:
         'Systolic_BP': scale_val(systolic, 90, 180),
         'Diastolic_BP': scale_val(diastolic, 60, 110)
     })
-    
-    # تطبيق الـ One-Hot Encoding للمهن والوزن
     if f'BMI Category_{bmi_cat}' in input_row: input_row[f'BMI Category_{bmi_cat}'] = 1.0
     if f'Occupation_{occupation}' in input_row: input_row[f'Occupation_{occupation}'] = 1.0
-    
     input_df = pd.DataFrame([input_row])[model.feature_names_in_]
 
-# 4. عرض النتائج والجدول الرقمي
+# 4. عرض النتائج والتشخيص (كتحذير)
 col1, col2 = st.columns([1, 1.2])
 
 with col1:
@@ -75,19 +70,23 @@ with col1:
         score = round(probs[1] * 10, 1)
         st.metric("درجة جودة النوم", f"{score} / 10")
         
-        # الملاحظات الذكية بناءً على التوتر والساعات
+        # --- قسم التشخيص النهائي كـ "تحذير" ---
+        st.markdown("---")
+        st.subheader("🩺 التشخيص الطبي المتوقع")
+        
         if score <= 5.5:
-            if sleep_dur >= 7.0 and stress > 5:
-                st.error("انخفاض كفاءة النوم (بسبب التوتر العالي) ⚠️")
-            else:
-                st.error("تنبيه: جودة نوم منخفضة ⚠️")
+            # تحديد نوع الاضطراب بناءً على بياناتك
+            diagnosis = "Sleep Apnea (انقطاع التنفس)" if bmi_cat == "Obese" else "Insomnia (أرق)"
+            st.error(f"⚠️ تحذير: تم تشخيص الحالة كـ {diagnosis}")
+            st.info(f"السبب: جودة النوم منخفضة ({score}) مع مؤشرات حيوية غير متوازنة.")
         else:
-            st.success("ممتاز جداً 🌟")
+            st.success("✅ التشخيص: None (حالة طبيعية)")
+            st.info("الملاحظة: لا توجد مؤشرات على اضطرابات النوم حالياً.")
 
-    # --- إضافة الجدول الرقمي (0 و 1) كما طلبتِ ---
+    # جدول الأرقام (0 و 1)
     st.markdown("---")
-    st.subheader("🔢 بيانات المعالجة الرقمية (Scaled Input)")
-    st.dataframe(input_df.T.rename(columns={0: 'Value'})) # عرض الجدول بشكل عمودي ليسهل قراءته
+    st.subheader("🔢 بيانات المعالجة الرقمية")
+    st.dataframe(input_df.T.rename(columns={0: 'Value'}))
 
 with col2:
     st.subheader("📊 مصفوفة الارتباط (Heatmap)")
