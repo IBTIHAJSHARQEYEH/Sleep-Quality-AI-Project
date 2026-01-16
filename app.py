@@ -18,10 +18,10 @@ def load_assets():
 
 model, data = load_assets()
 
-st.set_page_config(page_title="Sleep IQ Final Professional", layout="wide")
+st.set_page_config(page_title="Sleep IQ Final", layout="wide")
 st.title("🌙 نظام Sleep IQ: التحليل الطبي والفيزيائي المتكامل")
 
-# 2. القائمة الجانبية (شاملة المهن والضغط والنشاط)
+# 2. القائمة الجانبية (شاملة المهن والمؤشرات)
 st.sidebar.header("🩺 الملف الشخصي والمؤشرات الحيوية")
 with st.sidebar:
     gender = st.selectbox("الجنس", ["Male", "Female"])
@@ -40,7 +40,7 @@ with st.sidebar:
     all_occupations = ["Accountant", "Doctor", "Engineer", "Lawyer", "Manager", "Nurse", "Salesperson", "Sales Representative", "Scientist", "Software Engineer", "Teacher"]
     occupation = st.selectbox("المهنة", all_occupations)
 
-# 3. معالجة البيانات (Scaling & Encoding)
+# 3. معالجة البيانات للموديل (Scaling & Encoding)
 def scale_val(val, min_val, max_val):
     return (val - min_val) / (max_val - min_val) if max_val != min_val else 0
 
@@ -61,7 +61,7 @@ if model:
     if f'Occupation_{occupation}' in input_row: input_row[f'Occupation_{occupation}'] = 1.0
     input_df = pd.DataFrame([input_row])[model.feature_names_in_]
 
-# 4. عرض النتائج والتشخيص والملاحظات
+# 4. عرض النتائج والتشخيص والملاحظات (إصلاح خطأ الرسم البياني)
 col1, col2 = st.columns([1, 1.2])
 
 with col1:
@@ -76,11 +76,10 @@ with col1:
         if score <= 5.5:
             diagnosis = "Sleep Apnea (انقطاع التنفس)" if bmi_cat == "Obese" else "Insomnia (أرق)"
             st.error(f"⚠️ تحذير: تم تشخيص الحالة كـ {diagnosis}")
-            # الملاحظة الذكية للنتائج المنخفضة
-            st.info(f"الملاحظة: جودة النوم ({score}) منخفضة بسبب تداخل مستوى التوتر ({stress}) مع المؤشرات الحيوية.")
+            st.info(f"الملاحظة: جودة النوم منخفضة ({score}) بسبب تداخل مستوى التوتر ({stress}) مع المؤشرات الحيوية.")
         else:
             st.success("✅ التشخيص: None (حالة طبيعية)")
-            st.info("السبب الفيزيائي: هناك توازن إيجابي بين المؤشرات الحيوية وجودة النوم.")
+            st.info("الملاحظة: هناك توازن إيجابي بين المؤشرات الحيوية وجودة النوم حالياً.")
 
     st.markdown("---")
     st.subheader("🔢 بيانات المعالجة الرقمية (0-1)")
@@ -89,4 +88,7 @@ with col1:
 with col2:
     st.subheader("📊 مصفوفة الارتباط الشاملة (Heatmap)")
     if not data.empty:
-        fig, ax =
+        # إصلاح سطر الرسم البياني لضمان عدم حدوث SyntaxError
+        fig, ax = plt.subplots(figsize=(10, 8))
+        sns.heatmap(data.select_dtypes(include=[np.number]).corr(), annot=True, cmap='coolwarm', fmt=".1f", ax=ax)
+        st.pyplot(fig)
