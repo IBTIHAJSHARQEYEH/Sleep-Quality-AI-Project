@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-# نظام حماية للمكتبات المفقودة
+# نظام حماية للمكتبات المفقودة لتجنب الأخطاء الظاهرة في الصور
 try:
     import seaborn as sns
     HAS_SEABORN = True
@@ -13,7 +13,7 @@ except ImportError:
 # 1. إعدادات الصفحة
 st.set_page_config(page_title="Sleep IQ Final Edition", layout="wide")
 
-# 2. تحميل البيانات ومعالجة الأعمدة
+# 2. تحميل البيانات ومعالجة الأعمدة لتجنب KeyError
 @st.cache_data
 def load_and_fix_data():
     try:
@@ -51,10 +51,10 @@ with col_input:
         sleep_quality_input = st.slider("جودة النوم الحالية", 1, 10, 7)
 
     if st.button("تحليل جودة النوم 🚀"):
-        # قيم الجودة الأصلية بناءً على القواعد الصحية
+        # قيم الجودة الأصلية
         score = 9.7 
         
-        # منطق التنبؤ المصلح (إزاحة صحيحة)
+        # تصحيح منطق الـ if والإزاحة البرمجية
         if systolic > 155 or diastolic > 95 or bmi_cat == "Obese":
             score = 0.1 if job == "Nurse" else 0.0
             st.error(f"تحذير: مؤشرات صحية حرجة! الجودة المتوقعة: {score} 😡")
@@ -62,10 +62,25 @@ with col_input:
             score = 5.2
             st.warning(f"مستوى التوتر مرتفع! الجودة المتوقعة: {score} 😐")
         else:
-            st.balloons() # تأثير البالونات
+            st.balloons() # تأثير البالونات التفاعلي
             st.success(f"نتيجة ممتازة! الجودة المتوقعة هي: {score} 🎉")
 
 with col_matrix:
     st.subheader("📊 مصفوفة الارتباط الحية")
     if not df.empty and HAS_SEABORN:
-        fig_m, ax_m = plt.subplots(figsize=(10, 9)) [cite: image_f8abdd
+        # إصلاح القوس المفقود في subplots
+        fig_m, ax_m = plt.subplots(figsize=(10, 9))
+        sns.heatmap(df.select_dtypes(include=[np.number]).corr(), annot=True, cmap='coolwarm', fmt=".1f", ax=ax_m)
+        st.pyplot(fig_m)
+
+st.markdown("---")
+
+# 4. الأزرار السفلية للرسومات التفصيلية
+st.subheader("🔍 التقارير الإحصائية التفصيلية")
+col_b1, col_b2, col_b3 = st.columns(3)
+
+if col_b1.button("📊 توزيع الجودة والوزن"):
+    if not df.empty and HAS_SEABORN:
+        fig1, ax1 = plt.subplots()
+        sns.boxplot(data=df, x='BMI Category', y='Quality of Sleep', palette='Set2', ax=ax1)
+        st.pyplot(fig1) [cite: image_f92
