@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import joblib
 
-# 1. تحميل الأصول
+# 1. تحميل الأصول الأساسية
 @st.cache_resource
 def load_assets():
     try:
@@ -18,11 +18,11 @@ def load_assets():
 
 model, data = load_assets()
 
-st.set_page_config(page_title="Sleep IQ Final", layout="wide")
+st.set_page_config(page_title="Sleep IQ - Professional Edition", layout="wide")
 st.title("🌙 نظام Sleep IQ: التحليل الرقمي والتشخيص الطبي")
 
-# 2. القائمة الجانبية
-st.sidebar.header("🩺 المدخلات الحيوية والفيزيائية")
+# 2. القائمة الجانبية (المدخلات الحيوية والفيزيائية)
+st.sidebar.header("🩺 الملف الشخصي والمؤشرات الحيوية")
 with st.sidebar:
     gender = st.selectbox("الجنس", ["Male", "Female"])
     age = st.slider("العمر", 18, 80, 41)
@@ -37,9 +37,10 @@ with st.sidebar:
     heart_rate = st.slider("نبض القلب", 60, 100, 82)
     bmi_cat = st.selectbox("فئة الوزن", ["Normal Weight", "Overweight", "Obese"])
     
+    # قائمة المهن الكاملة
     occupation = st.selectbox("المهنة", ["Accountant", "Doctor", "Engineer", "Lawyer", "Manager", "Nurse", "Salesperson", "Sales Representative", "Scientist", "Software Engineer", "Teacher"])
 
-# 3. معالجة البيانات للموديل
+# 3. معالجة البيانات للموديل (Scaling & One-Hot Encoding)
 def scale_val(val, min_val, max_val):
     return (val - min_val) / (max_val - min_val) if max_val != min_val else 0
 
@@ -60,36 +61,30 @@ if model:
     if f'Occupation_{occupation}' in input_row: input_row[f'Occupation_{occupation}'] = 1.0
     input_df = pd.DataFrame([input_row])[model.feature_names_in_]
 
-# 4. عرض النتائج والتشخيص (كتحذير)
+# 4. عرض النتائج والتشخيص
 col1, col2 = st.columns([1, 1.2])
 
 with col1:
-    st.subheader("🚀 نتيجة التحليل")
+    st.subheader("🚀 نتيجة التحليل الذكي")
     if st.button("تحليل الحالة 💡"):
         probs = model.predict_proba(input_df)[0]
         score = round(probs[1] * 10, 1)
         st.metric("درجة جودة النوم", f"{score} / 10")
         
-        # --- قسم التشخيص النهائي كـ "تحذير" ---
         st.markdown("---")
         st.subheader("🩺 التشخيص الطبي المتوقع")
-        
         if score <= 5.5:
-            # تحديد نوع الاضطراب بناءً على بياناتك
             diagnosis = "Sleep Apnea (انقطاع التنفس)" if bmi_cat == "Obese" else "Insomnia (أرق)"
             st.error(f"⚠️ تحذير: تم تشخيص الحالة كـ {diagnosis}")
-            st.info(f"السبب: جودة النوم منخفضة ({score}) مع مؤشرات حيوية غير متوازنة.")
         else:
             st.success("✅ التشخيص: None (حالة طبيعية)")
-            st.info("الملاحظة: لا توجد مؤشرات على اضطرابات النوم حالياً.")
 
-    # جدول الأرقام (0 و 1)
     st.markdown("---")
-    st.subheader("🔢 بيانات المعالجة الرقمية")
+    st.subheader("🔢 بيانات المعالجة الرقمية (0-1)")
     st.dataframe(input_df.T.rename(columns={0: 'Value'}))
 
 with col2:
-    st.subheader("📊 مصفوفة الارتباط (Heatmap)")
+    st.subheader("📊 مصفوفة الارتباط الشاملة (Heatmap)")
     if not data.empty:
         fig, ax = plt.subplots(figsize=(10, 8))
         sns.heatmap(data.select_dtypes(include=[np.number]).corr(), annot=True, cmap='coolwarm', fmt=".1f", ax=ax)
