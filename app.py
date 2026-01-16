@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-# حل مشكلة نقص المكتبات الظاهرة في الصور
+# حل مشكلة نقص المكتبات
 try:
     import seaborn as sns
     HAS_SEABORN = True
@@ -11,9 +11,9 @@ except ImportError:
     HAS_SEABORN = False
 
 # 1. إعدادات الصفحة
-st.set_page_config(page_title="Sleep IQ Final Pro", layout="wide")
+st.set_page_config(page_title="Sleep IQ Final Layout", layout="wide")
 
-# 2. تحميل البيانات وتجهيزها لتجنب KeyError
+# 2. تحميل البيانات ومعالجة الأسماء لتجنب KeyError
 @st.cache_data
 def load_clean_data():
     try:
@@ -25,7 +25,7 @@ def load_clean_data():
 
 df = load_clean_data()
 
-st.title("🌙 نظام Sleep IQ: النسخة المصلحة والنهائية")
+st.title("🌙 نظام Sleep IQ: التنسيق النهائي للميزات")
 st.markdown("---")
 
 # 3. واجهة التحكم العلوية (الميزات والمصفوفة)
@@ -36,18 +36,20 @@ with col_input:
     c1, c2 = st.columns(2)
     
     with c1:
-        gender = st.selectbox("الجنس (Gender)", ["Male", "Female"])
-        age = st.slider("العمر", 10, 90, 22)
-        # وضع الضغط تحت بعضه مباشرة
+        # ترتيب العمود الأول: ساعات النوم فوق والضغط تحت
+        sleep_hrs = st.slider("ساعات النوم (Sleep Duration)", 2.0, 12.0, 7.4)
+        st.markdown("---")
         systolic = st.slider("الضغط الانقباضي (Systolic)", 80, 200, 120)
         diastolic = st.slider("الضغط الانبساطي (Diastolic)", 50, 130, 80)
-        sleep_hrs = st.slider("ساعات النوم (Duration)", 2.0, 12.0, 7.4)
+        gender = st.selectbox("الجنس (Gender)", ["Male", "Female"])
+        age = st.slider("العمر", 10, 90, 22)
     
     with c2:
-        # نقل المهنة إلى العمود الثاني
-        job = st.selectbox("المهنة", ["Doctor", "Nurse", "Engineer", "Teacher", "Accountant"])
-        stress = st.slider("مستوى التوتر", 1, 10, 6)
-        bmi_cat = st.selectbox("فئة الوزن (BMI)", ["Normal Weight", "Overweight", "Obese"])
+        # ترتيب العمود الثاني: التوتر فوق، ثم الوزن، ثم المهنة تحت الوزن
+        stress = st.slider("مستوى التوتر (Stress Level)", 1, 10, 6)
+        st.markdown("---")
+        bmi_cat = st.selectbox("فئة الوزن (BMI Category)", ["Normal Weight", "Overweight", "Obese"])
+        job = st.selectbox("المهنة (Occupation)", ["Doctor", "Nurse", "Engineer", "Teacher", "Accountant"])
         heart_rate = st.slider("نبض القلب", 50, 120, 65)
         steps = st.slider("عدد الخطوات", 0, 20000, 5487)
 
@@ -55,7 +57,7 @@ with col_input:
         # قيم الجودة الأصلية
         score = 9.7 
         
-        # تصحيح الإزاحة (Indentation) كما في الصورة
+        # تصحيح الإزاحة (Indentation) لمنع الخطأ البرمجي
         if systolic > 155 or diastolic > 95 or bmi_cat == "Obese":
             score = 0.1 if job == "Nurse" else 0.0
             st.error(f"تحذير: مؤشرات صحية حرجة! الجودة: {score} 😡")
@@ -69,7 +71,7 @@ with col_input:
 with col_matrix:
     st.subheader("📊 مصفوفة الارتباط الحية")
     if not df.empty and HAS_SEABORN:
-        # إغلاق الأقواس بشكل صحيح لتجنب SyntaxError
+        # إصلاح الأقواس لمنع SyntaxError
         fig_m, ax_m = plt.subplots(figsize=(10, 8))
         sns.heatmap(df.select_dtypes(include=[np.number]).corr(), annot=True, cmap='coolwarm', fmt=".1f", ax=ax_m)
         st.pyplot(fig_m)
@@ -88,7 +90,6 @@ if col_b1.button("📊 جودة النوم vs الوزن"):
 
 if col_b2.button("📉 تحليل الضغط"):
     if not df.empty and HAS_SEABORN:
-        # بحث تلقائي عن اسم العمود لتجنب KeyError
         bp_col = 'Systolic BP' if 'Systolic BP' in df.columns else (df.columns[1] if len(df.columns)>1 else df.columns[0])
         fig2, ax2 = plt.subplots()
         sns.regplot(data=df, x=bp_col, y='Quality of Sleep', color='blue', ax=ax2)
