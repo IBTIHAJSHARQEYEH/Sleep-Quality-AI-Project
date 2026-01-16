@@ -10,7 +10,7 @@ try:
 except ImportError:
     HAS_SEABORN = False
 
-# 1. إعدادات الصفحة والجماليات
+# 1. جمال 
 st.set_page_config(page_title="Sleep IQ Professional", layout="wide")
 
 st.markdown("""
@@ -37,7 +37,7 @@ def get_data():
 
 df = get_data()
 
-st.title("🌙 نظام Sleep IQ المطور")
+st.title("🌙Sleep quality app")
 st.write("تحليل ذكي لجودة النوم مع تمثيل بياني للعلاقات")
 
 # 3. واجهة التحكم والمدخلات
@@ -52,8 +52,7 @@ with col1:
     bmi = st.selectbox("فئة الوزن", ["Normal Weight", "Overweight", "Obese"])
     job = st.selectbox("المهنة", ["Engineer", "Doctor", "Nurse", "Teacher"])
 
-    if st.button("تحليل جودة النوم 🚀"):
-        # منطق التنبؤ بناءً على تجاربك الحية
+    if st.button("اضغط لمعرفة جودة نومك"):
         score = 9.7 # افتراضي للحالات الجيدة
         
         if systolic > 155 or bmi == "Obese":
@@ -62,9 +61,9 @@ with col1:
         elif age == 26 and stress == 10:
             score = 5.7 # حالة التوتر المتوسطة
 
-        # عرض النتيجة مع التأثيرات الجمالية
+        # عرض النتيجة
         if score >= 7.0:
-            st.balloons() # إطلاق البوالين للنجاح
+            st.balloons() # إطلاق البوالين 
             st.markdown(f"<div class='result-card' style='background-color: #28a745;'><h2>ممتاز جداً 🎉</h2><h1>{score} / 10</h1></div>", unsafe_allow_html=True)
         elif score >= 4.0:
             st.markdown(f"<div class='result-card' style='background-color: #ffc107; color: black;'><h2>جودة متوسطة 😐</h2><h1>{score} / 10</h1></div>", unsafe_allow_html=True)
@@ -74,15 +73,14 @@ with col1:
 
 # 4. الرسوم البيانية (مصفوفة الارتباط)
 with col2:
-    st.subheader("📊 مصفوفة ارتباط الخصائص (Heatmap)")
+    st.subheader(" (Heatmap)")
     if HAS_SEABORN and not df.empty:
-        # إصلاح الخطأ السابق في إغلاق القوس
         fig, ax = plt.subplots(figsize=(10, 8)) 
         numeric_df = df.select_dtypes(include=[np.number])
         sns.heatmap(numeric_df.corr(), annot=True, cmap='RdYlGn', fmt=".2f", ax=ax)
         st.pyplot(fig)
     elif not HAS_SEABORN:
-        st.warning("يرجى تثبيت مكتبة seaborn لرؤية مصفوفة الارتباط.")
+        st.warning("يتم تثبيت مكتبة seaborn لرؤية مصفوفة الارتباط.")
     else:
         st.info("يرجى التأكد من رفع ملف البيانات لرسم العلاقات.")
 
