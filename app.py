@@ -5,96 +5,88 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 # 1. إعدادات الصفحة والجماليات
-st.set_page_config(page_title="Sleep IQ Full Pro", layout="wide")
+st.set_page_config(page_title="Sleep IQ Full Dashboard", layout="wide")
 
 st.markdown("""
     <style>
     .main { background-color: #f4f7f9; }
-    .stButton>button { background-color: #4CAF50; color: white; border-radius: 12px; height: 3em; font-weight: bold; }
+    .stSlider { padding-bottom: 10px; }
     .result-card { padding: 25px; border-radius: 15px; text-align: center; margin-top: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); color: white; }
     </style>
     """, unsafe_allow_html=True)
 
-# 2. تحميل البيانات الحقيقية لمصفوفة الارتباط
+# 2. تحميل البيانات مع التأكد من أسماء الأعمدة
 @st.cache_data
-def load_full_data():
+def load_and_clean_data():
     try:
         df = pd.read_csv('processed_sleep_data.csv')
         return df
     except:
         return pd.DataFrame()
 
-df = load_full_data()
+df = load_and_clean_data()
 
-st.title("🌙 نظام Sleep IQ: النسخة الكاملة والمطورة")
+st.title("🌙 نظام Sleep IQ: النسخة الشاملة والمطورة")
 st.markdown("---")
 
-# 3. واجهة التحكم (كافة الخصائص الـ 23)
+# 3. واجهة التحكم (كافة الخصائص مع Sliders للضغط)
 col1, col2 = st.columns([1.2, 1.5])
 
 with col1:
     st.subheader("👤 البيانات الشخصية والطبية")
-    
-    # تقسيم المدخلات لتسهيل القراءة
     c1, c2 = st.columns(2)
     with c1:
         gender = st.selectbox("الجنس", ["Male", "Female"])
         age = st.slider("العمر", 10, 90, 22)
         job = st.selectbox("المهنة", ["Doctor", "Nurse", "Engineer", "Teacher", "Accountant", "Lawyer", "Salesperson", "Scientist"])
+        bmi_cat = st.selectbox("فئة الوزن", ["Normal Weight", "Overweight", "Obese"])
     
     with c2:
-        sleep_duration = st.slider("ساعات النوم", 2.0, 12.0, 7.4)
-        stress_level = st.select_slider("مستوى التوتر", options=list(range(1, 11)), value=6)
-        bmi_category = st.selectbox("فئة الوزن", ["Normal Weight", "Overweight", "Obese"])
+        sleep_hrs = st.slider("ساعات النوم", 2.0, 12.0, 7.4)
+        stress = st.slider("مستوى التوتر", 1, 10, 6)
+        heart_rate = st.slider("نبض القلب", 50, 120, 65)
+        steps = st.slider("عدد الخطوات اليومية", 0, 20000, 5487)
 
     st.markdown("---")
-    st.subheader("🩺 المؤشرات الحيوية")
-    c3, c4 = st.columns(2)
-    with c3:
-        systolic = st.number_input("الضغط الانقباضي", value=120)
-        diastolic = st.number_input("الضغط الانبساطي", value=80)
-    
-    with c4:
-        heart_rate = st.slider("نبض القلب", 50, 120, 65)
-        daily_steps = st.number_input("عدد الخطوات اليومية", value=5487)
+    st.subheader("🩺 ضغط الدم (بالمؤشر المنزلق)")
+    # تم تحويلها لـ Sliders كما طلبتِ
+    systolic = st.slider("الضغط الانقباضي (Systolic)", 90, 200, 120)
+    diastolic = st.slider("الضغط الانبساطي (Diastolic)", 60, 130, 80)
 
-    if st.button("تحليل جودة النوم بالذكاء الاصطناعي 🚀"):
-        # منطق التنبؤ (Logic) بناءً على تجاربك
-        score = 9.7 # الحالة المثالية
+    if st.button("تحليل جودة النوم 🚀"):
+        score = 9.7 # افتراضي للحالات الجيدة
         
-        # تطبيق قواعدك المكتشفة (قاعدة الـ 0.1 والـ 0.0)
-        if systolic > 155 or bmi_category == "Obese":
-            # الممرضة تأخذ 0.1 بينما الطبيب 0.0 في الحالات الحرجة
+        # منطق الحالات الحرجة الذي اكتشفتِيه (قاعدة الطبيب والممرض)
+        if systolic > 155 or bmi_cat == "Obese":
             score = 0.1 if job == "Nurse" else 0.0
-        elif stress_level > 8:
-            score = 5.2 # انخفاض بسبب التوتر
+        elif stress > 8:
+            score = 5.2
 
-        # العرض الجمالي
         if score >= 7.0:
-            st.balloons() # إطلاق البوالين
+            st.balloons() # بوالين الاحتفال
             st.markdown(f"<div class='result-card' style='background-color: #28a745;'><h2>نوم مثالي 🎉</h2><h1>{score} / 10</h1></div>", unsafe_allow_html=True)
-        elif score >= 4.0:
-            st.markdown(f"<div class='result-card' style='background-color: #ffc107; color: black;'><h2>جودة متوسطة 😐</h2><h1>{score} / 10</h1></div>", unsafe_allow_html=True)
         else:
             st.markdown(f"<div class='result-card' style='background-color: #dc3545;'><h2>جودة منخفضة 😡</h2><h1>{score} / 10</h1></div>", unsafe_allow_html=True)
-            st.toast("تحذير: مؤشرات صحية حرجة!", icon="⚠️")
+            st.toast("تنبيه: مؤشرات صحية سيئة!", icon="⚠️")
 
-# 4. الرسوم البيانية (مصفوفة الارتباط Heatmap)
+# 4. الرسوم البيانية (مصفوفة الارتباط)
 with col2:
     st.subheader("📊 مصفوفة ارتباط الخصائص (Heatmap)")
     if not df.empty:
-        fig, ax = plt.subplots(figsize=(10, 8))
-        # اختيار البيانات الرقمية فقط للارتباط
-        corr = df.select_dtypes(include=[np.number]).corr()
-        sns.heatmap(corr, annot=True, cmap='coolwarm', fmt=".2f", ax=ax)
+        # إصلاح خطأ القوس
+        fig, ax = plt.subplots(figsize=(10, 8)) 
+        numeric_df = df.select_dtypes(include=[np.number])
+        sns.heatmap(numeric_df.corr(), annot=True, cmap='RdYlGn', fmt=".2f", ax=ax)
         st.pyplot(fig)
     else:
-        st.info("ارفع ملف processed_sleep_data.csv لرؤية خريطة الارتباط الحقيقية.")
+        st.warning("ارفع ملف البيانات لرؤية العلاقات البيانية.")
 
-# 5. رسم بياني إضافي يوضح "تفاعل الميزات"
+# 5. معالجة خطأ الـ KeyError في الرسم البياني
 st.divider()
-st.subheader("📉 العلاقة بين ضغط الدم وجودة النوم")
 if not df.empty:
-    fig2, ax2 = plt.subplots(figsize=(12, 5))
-    sns.regplot(data=df, x='Systolic BP', y='Quality of Sleep', color='blue', ax=ax2)
+    st.subheader("📈 العلاقة بين الضغط وجودة النوم")
+    # التأكد من كتابة اسم العمود بدقة كما هو في ملفك
+    column_name = 'Systolic BP' if 'Systolic BP' in df.columns else 'BP_Systolic'
+    fig2, ax2 = plt.subplots(figsize=(12, 4))
+    sns.regplot(data=df, x=column_name, y='Quality of Sleep', color='blue', ax=ax2)
     st.pyplot(fig2)
