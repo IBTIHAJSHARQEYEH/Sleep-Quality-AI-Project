@@ -19,10 +19,10 @@ def load_assets():
 model, data = load_assets()
 
 st.set_page_config(page_title="Sleep IQ - Precision Mode", layout="wide")
-st.title("🌙 نظام Sleep IQ: التحليل الطبي والفيزيائي المتوازن")
+st.title("🌙  Sleep Quality")
 
 # 2. القائمة الجانبية
-st.sidebar.header("🩺 مدخلات الحالة")
+st.sidebar.header("🩺 المدخلات")
 with st.sidebar:
     gender = st.selectbox("الجنس", ["Male", "Female"])
     age = st.slider("العمر", 18, 80, 41)
@@ -64,14 +64,14 @@ if model:
 col1, col2 = st.columns([1, 1.2])
 
 with col1:
-    st.subheader("🚀 نتيجة التحليل")
-    if st.button("تحليل الحالة 💡"):
+    st.subheader(" النتيجة:")
+    if st.button("افحص الجودة"):
         probs = model.predict_proba(input_df)[0]
         score = round(probs[1] * 10, 1)
         st.metric("درجة جودة النوم", f"{score} / 10")
 
         st.markdown("---")
-        st.subheader("🩺 التشخيص والملاحظة الدقيقة")
+        st.subheader("🩺 التشخيص ")
         
         # تشخيص الحالة بناءً على السكور وفئة الوزن
         if score <= 5.5:
@@ -94,7 +94,7 @@ with col1:
     st.dataframe(input_df.T.rename(columns={0: 'Value'}))
 
 with col2:
-    st.subheader("📊 مصفوفة الارتباط (Heatmap)")
+    st.subheader("📊 (Heatmap)")
     if not data.empty:
         fig, ax = plt.subplots(figsize=(10, 8))
         sns.heatmap(data.select_dtypes(include=[np.number]).corr(), annot=True, cmap='coolwarm', fmt=".1f", ax=ax)
